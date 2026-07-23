@@ -55,3 +55,29 @@
     word-break: keep-all;
   }
 }
+
+@layer components {
+  /* 히어로 배경 글로우 — 유일한 애니메이션. CSS keyframes(=rAF 루프 없음). */
+  .hero-glow {
+    background: radial-gradient(closest-side, rgba(0, 212, 164, 0.35), transparent);
+    transform: translateX(-50%);
+    opacity: 0.55;
+    animation: hero-pulse 8s ease-in-out infinite;
+  }
+  @keyframes hero-pulse {
+    0%,
+    100% {
+      transform: translateX(-50%) scale(1);
+      opacity: 0.5;
+    }
+    50% {
+      transform: translateX(-50%) scale(1.12);
+      opacity: 0.72;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-glow {
+      animation: none;
+    }
+  }
+}
