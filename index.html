@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Seungbin — AI 워크플로우 &amp; 기술 위키</title>
+<meta name="description" content="유튜브 링크 하나 던지면 Notion에 요약이 도착합니다. AI 워크플로우·자동화·Claude 활용법을 만들고 전부 공개하는 기술 블로그.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Seungbin — AI 워크플로우 &amp; 기술 위키">
+<meta property="og:description" content="유튜브 링크 하나 던지면 Notion에 요약이 도착합니다. 만드는 과정을 전부 공개합니다.">
+<!-- [PLACEHOLDER] og:image — 배포 시 실제 절대 URL로 교체 -->
+<meta property="og:image" content="https://example.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+<style>
+/* ===== Mintlify design tokens (DESIGN-mintlify.md) ===== */
+:root{
+  --primary:#0a0a0a; --on-primary:#ffffff;
+  --brand-green:#00d4a4; --brand-green-deep:#00b48a;
+  --brand-tag:#2f66c0; --tag-bg:rgba(55,114,207,.15);
+  --canvas:#ffffff; --surface:#f7f7f7; --surface-soft:#fafafa; --surface-code:#1c1c1e;
+  --hairline:#e5e5e5; --hairline-soft:#ededed;
+  --ink:#0a0a0a; --charcoal:#1c1c1e; --slate:#3a3a3c; --steel:#5a5a5c; --stone:#6b6b6b;
+  --on-dark:#ffffff; --on-dark-muted:#b3b3b3;
+  --thumb:linear-gradient(135deg,#e9edf1 0%,#f3f0ea 100%);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic","Segoe UI",sans-serif;
+  color:var(--ink);background:var(--canvas);font-size:16px;line-height:1.5;word-break:keep-all;
+}
+code,.mono{font-family:"Geist Mono","SF Mono",Menlo,Consolas,monospace}
+a{color:inherit;text-decoration:none}
+.container{max-width:1080px;margin:0 auto;padding:0 24px}
+
+/* skip-to-content */
+.skip-link{position:absolute;left:8px;top:-48px;z-index:1000;background:#fff;color:#111;border:1px solid #ddd;border-radius:8px;padding:8px 14px;font-size:14px;transition:top .15s ease}
+.skip-link:focus{top:8px}
+
+/* ===== header ===== */
+header{border-bottom:1px solid var(--hairline-soft);position:sticky;top:0;background:var(--canvas);z-index:20}
+.head-inner{height:60px;display:flex;align-items:center;justify-content:space-between}
+.wordmark{font-weight:600;font-size:16px;letter-spacing:-.3px}
+.head-links{display:flex;gap:18px;font-size:14px;color:var(--steel)}
+.head-links a:hover{color:var(--ink)}
+
+/* ===== intro (히어로 최소화) ===== */
+.intro{padding:56px 0 32px}
+.intro h1{font-size:28px;font-weight:600;line-height:1.25;letter-spacing:0}
+.intro p{font-size:16px;color:var(--steel);margin-top:8px;max-width:640px}
+.intro p a{color:var(--ink);border-bottom:1px solid var(--hairline);font-weight:500}
+
+/* ===== search (UI만) ===== */
+.search{padding-bottom:20px}
+.search input{width:100%;height:44px;font-size:16px;color:var(--ink);background:var(--surface);
+  border:1px solid var(--hairline);border-radius:9999px;padding:0 20px 0 44px;
+  background-image:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%235a5a5c' stroke-width='2' stroke-linecap='round'><circle cx='11' cy='11' r='7'/><path d='M21 21l-4.3-4.3'/></svg>");
+  background-repeat:no-repeat;background-position:16px center}
+.search input::placeholder{color:var(--stone)}
+.search input:focus{outline:2px solid var(--ink);outline-offset:2px;border-color:var(--brand-green)}
+
+/* ===== category tabs — pill-tab 토큰 ===== */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;padding-bottom:28px}
+.tab{font-size:14px;font-weight:500;color:var(--steel);background:var(--canvas);border:1px solid var(--hairline);border-radius:9999px;padding:8px 16px;cursor:pointer}
+.tab.active{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
+
+/* ===== post grid ===== */
+.posts{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;padding-bottom:64px}
+.post{border:1px solid var(--hairline);border-radius:12px;display:flex;flex-direction:column;overflow:hidden;transition:box-shadow .15s ease}
+.post:hover{box-shadow:rgba(0,0,0,.08) 0 4px 12px 0}
+.post .thumb{aspect-ratio:16/9;background:var(--thumb);flex-shrink:0}
+.post .pbody{padding:20px;display:flex;flex-direction:column;gap:10px;flex:1}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:12px;font-weight:600;color:var(--brand-tag);background:var(--tag-bg);border-radius:9999px;padding:3px 10px}
+.post h2{font-size:18px;font-weight:600;line-height:1.4}
+.post .desc{font-size:14px;color:var(--steel);flex:1;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.byline{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--stone);margin-top:4px}
+.avatar{width:24px;height:24px;border-radius:9999px;background:var(--thumb);flex-shrink:0}
+.byline .who{color:var(--slate);font-weight:500}
+.posts .empty{grid-column:1/-1;text-align:center;color:var(--stone);font-size:14px;padding:40px 0}
+
+/* ===== 자료실 스트립 ===== */
+.resources{background:var(--surface-soft);border-top:1px solid var(--hairline-soft);border-bottom:1px solid var(--hairline-soft);padding:40px 0}
+.res-inner{display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.res-inner h3{font-size:18px;font-weight:600}
+.res-inner p{font-size:14px;color:var(--steel);margin-top:4px}
+.res-inner p strong{color:var(--ink)}
+.btn{display:inline-block;font-size:14px;font-weight:500;line-height:1.3;border-radius:9999px;padding:10px 20px;cursor:pointer}
+.btn-primary{background:var(--primary);color:var(--on-primary)}
+
+/* ===== footer ===== */
+footer{padding:40px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;font-size:14px;color:var(--steel)}
+footer .links{display:flex;gap:16px}
+footer a:hover{color:var(--ink)}
+
+@media (max-width:768px){
+  .posts{grid-template-columns:1fr}
+  .head-links{gap:12px;font-size:13px}
+  .intro{padding:40px 0 24px}
+  .tab{min-height:44px}
+  .btn{padding:13px 20px}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">본문으로 건너뛰기</a>
+
+<header>
+  <div class="container head-inner">
+    <a class="wordmark" href="index.html">seungbin.dev</a><!-- [PLACEHOLDER] 실제 도메인/이름 -->
+    <nav class="head-links">
+      <a href="#ph-github">GitHub</a><!-- [PLACEHOLDER] URL -->
+      <a href="#ph-threads">Threads</a><!-- [PLACEHOLDER] URL -->
+      <a href="#ph-linkedin">LinkedIn</a><!-- [PLACEHOLDER] URL -->
+    </nav>
+  </div>
+</header>
+
+<section class="intro">
+  <div class="container">
+    <h1>유튜브 링크 하나 던지면, Notion에 요약이 도착합니다</h1>
+    <p>이런 AI 워크플로우를 직접 만들어 쓰고, 만드는 과정을 전부 기록합니다.
+    도움이 됐다면 <a href="#ph-github">GitHub에 ⭐ 하나만</a><!-- [PLACEHOLDER] URL --> 남겨주세요.</p>
+  </div>
+</section>
+
+<main class="container" id="main">
+  <!-- 검색: UI만, 동작은 다음 단계 -->
+  <div class="search">
+    <input type="search" placeholder="제목, 태그, 키워드로 검색..." aria-label="글 검색"><!-- [PLACEHOLDER] 검색 동작 미구현 -->
+  </div>
+
+  <div class="tabs" role="group" aria-label="카테고리 필터">
+    <button class="tab active" data-cat="all" aria-pressed="true">전체</button>
+    <button class="tab" data-cat="build" aria-pressed="false">Build</button>
+    <button class="tab" data-cat="automate" aria-pressed="false">Automate</button>
+    <button class="tab" data-cat="grow" aria-pressed="false">Grow</button>
+  </div>
+
+  <div class="posts">
+    <!-- [PLACEHOLDER] 실제 글로 교체 — data-cat: build | automate | grow, href는 각 글 파일 -->
+    <a class="post" data-cat="automate" href="post.html">
+      <div class="thumb" aria-hidden="true"></div>
+      <div class="pbody">
+        <div class="tags"><span class="tag">Automate</span><span class="tag">Notion</span></div>
+        <h2>유튜브 링크 하나로 Notion 요약 파이프라인 만들기</h2>
+        <p class="desc">영상 URL만 던지면 자막 추출·핵심 요약·스크린샷까지 붙어 Notion에 자동 저장됩니다. yt-dlp·Whisper·Claude로 엮은 전 과정을 공개합니다.</p>
+        <div class="byline"><span class="avatar" aria-hidden="true"></span><span class="who">Seungbin</span><span aria-hidden="true">·</span><span>2026년 7월 22일</span></div>
+      </div>
+    </a>
+    <a class="post" data-cat="automate" href="post.html">
+      <div class="thumb" aria-hidden="true"></div>
+      <div class="pbody">
+        <div class="tags"><span class="tag">Automate</span><span class="tag">Claude</span></div>
+        <h2>"배포" 한 단어로 테스트→커밋→푸시 자동화하기</h2>
+        <p class="desc">터미널에 '배포'만 치면 pytest 통과 확인, 커밋 메시지 작성, 푸시까지 알아서 굴러갑니다. Claude Code 키워드 훅 셋업을 그대로 옮겼습니다.</p>
+        <div class="byline"><span class="avatar" aria-hidden="true"></span><span class="who">Seungbin</span><span aria-hidden="true">·</span><span>2026년 7월 18일</span></div>
+      </div>
+    </a>
+    <a class="post" data-cat="automate" href="post.html">
+      <div class="thumb" aria-hidden="true"></div>
+      <div class="pbody">
+        <div class="tags"><span class="tag">Automate</span><span class="tag">build-in-public</span></div>
+        <h2>이 블로그를 브레인스토밍부터 배포까지 AI로 만든 기록</h2>
+        <p class="desc">분류 체계 설계 → 디자인 벤치마킹 → 코드 구현까지 전부 AI와 페어로 진행했습니다. 실제로 주고받은 결정과 삽질을 그대로 남깁니다.</p>
+        <div class="byline"><span class="avatar" aria-hidden="true"></span><span class="who">Seungbin</span><span aria-hidden="true">·</span><span>2026년 7월 15일</span></div>
+      </div>
+    </a>
+    <a class="post" data-cat="build" href="post.html">
+      <div class="thumb" aria-hidden="true"></div>
+      <div class="pbody">
+        <div class="tags"><span class="tag">Build</span><span class="tag">FastAPI</span></div>
+        <h2>FastAPI + SQLModel로 5분 만에 REST API 뼈대 세우기</h2>
+        <p class="desc">인증·검증·에러 핸들링까지 갖춘 최소 백엔드 템플릿. 400과 500을 확실히 구분하는 예외 처리 패턴을 함께 정리했습니다.</p>
+        <div class="byline"><span class="avatar" aria-hidden="true"></span><span class="who">Seungbin</span><span aria-hidden="true">·</span><span>2026년 7월 9일</span></div>
+      </div>
+    </a>
+    <a class="post" data-cat="grow" href="post.html">
+      <div class="thumb" aria-hidden="true"></div>
+      <div class="pbody">
+        <div class="tags"><span class="tag">Grow</span><span class="tag">코딩테스트</span></div>
+        <h2>코딩테스트 준비를 AI 워크플로우로 돌린 4주 회고</h2>
+        <p class="desc">문제 풀이 → 오답 분류 → 취약 유형 자동 추천까지 루틴화한 기록. 무작정 많이 푸는 대신 약한 곳만 반복하게 만들었습니다.</p>
+        <div class="byline"><span class="avatar" aria-hidden="true"></span><span class="who">Seungbin</span><span aria-hidden="true">·</span><span>2026년 7월 3일</span></div>
+      </div>
+    </a>
+    <a class="post" data-cat="automate" href="post.html">
+      <div class="thumb" aria-hidden="true"></div>
+      <div class="pbody">
+        <div class="tags"><span class="tag">Automate</span><span class="tag">큐레이션</span></div>
+        <h2>좋은 플러그인·툴을 빠르게 찾고 검증하는 방법</h2>
+        <p class="desc">물고기 말고 낚시법. 새 도구를 발굴하고 30분 안에 쓸지 버릴지 판단하는 체크리스트와 정보 소스를 공개합니다.</p>
+        <div class="byline"><span class="avatar" aria-hidden="true"></span><span class="who">Seungbin</span><span aria-hidden="true">·</span><span>2026년 6월 27일</span></div>
+      </div>
+    </a>
+  </div>
+</main>
+
+<section class="resources">
+  <div class="container res-inner">
+    <div>
+      <h3><span aria-hidden="true">📄</span> 자료실 — 치트시트 전부 무료</h3>
+      <p>제가 실제로 쓰려고 만든 것들입니다. 도움이 됐다면 <strong>GitHub ⭐ 하나</strong>가 연료입니다.</p>
+    </div>
+    <a class="btn btn-primary" href="#ph-github">치트시트 받기</a><!-- [PLACEHOLDER] 자료 저장소 URL -->
+  </div>
+</section>
+
+<footer>
+  <span>© 2026 Seungbin Min</span>
+  <div class="links">
+    <a href="#ph-github">GitHub</a><!-- [PLACEHOLDER] -->
+    <a href="#ph-threads">Threads</a><!-- [PLACEHOLDER] -->
+    <a href="#ph-linkedin">LinkedIn</a><!-- [PLACEHOLDER] -->
+  </div>
+</footer>
+
+<script>
+// ponytail: 카테고리 필터 — 글이 늘어 정적 생성이 필요해지면 SSG로 교체
+const posts = [...document.querySelectorAll('.post')];
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => { t.classList.remove('active'); t.setAttribute('aria-pressed','false'); });
+    tab.classList.add('active'); tab.setAttribute('aria-pressed','true');
+    const cat = tab.dataset.cat;
+    posts.forEach(p => { p.style.display = (cat === 'all' || p.dataset.cat === cat) ? '' : 'none'; });
+  });
+});
+</script>
+
+</body>
+</html>

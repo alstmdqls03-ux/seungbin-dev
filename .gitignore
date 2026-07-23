@@ -1,0 +1,9 @@
+# 로컬 작업물 — 공개 사이트 repo에서 제외 (디스크에는 유지)
+.DS_Store
+.playwright-mcp/
+_shots/
+_bmad/
+_bmad-output/
+.claude/
+docs/
+DESIGN-mintlify.md

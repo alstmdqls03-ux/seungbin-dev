@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>유튜브 링크 하나로 Notion 요약 파이프라인 만들기 — seungbin.dev</title>
+<meta name="description" content="유튜브 링크 하나만 던지면 자막·핵심 요약·스크린샷이 붙어 Notion에 자동 저장되는 파이프라인을 처음부터 끝까지 재현합니다.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="유튜브 링크 하나로 Notion 요약 파이프라인 만들기">
+<meta property="og:description" content="영상 URL만 던지면 요약이 Notion에 도착합니다. yt-dlp·ffmpeg·Claude로 엮은 전 과정.">
+<!-- [PLACEHOLDER] og:image — 글 대표 이미지 절대 URL로 교체 -->
+<meta property="og:image" content="https://example.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+<style>
+/* ===== Mintlify design tokens (DESIGN-mintlify.md) — index.html과 동일 팔레트 =====
+   ponytail: 정적 2파일이라 토큰 블록 중복. 3번째 페이지 또는 SSG 도입 시 shared.css로 추출 */
+:root{
+  --primary:#0a0a0a; --on-primary:#ffffff;
+  --brand-green:#00d4a4; --brand-green-deep:#00b48a;
+  --brand-tag:#2f66c0; --tag-bg:rgba(55,114,207,.15);
+  --canvas:#ffffff; --surface:#f7f7f7; --surface-soft:#fafafa; --surface-code:#1c1c1e;
+  --hairline:#e5e5e5; --hairline-soft:#ededed;
+  --ink:#0a0a0a; --charcoal:#1c1c1e; --slate:#3a3a3c; --steel:#5a5a5c; --stone:#6b6b6b;
+  --on-dark:#ffffff; --on-dark-muted:#b3b3b3;
+  --thumb:linear-gradient(135deg,#e9edf1 0%,#f3f0ea 100%);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic","Segoe UI",sans-serif;
+  color:var(--ink);background:var(--canvas);font-size:16px;line-height:1.5;word-break:keep-all;
+}
+code,.mono{font-family:"Geist Mono","SF Mono",Menlo,Consolas,monospace}
+a{color:inherit;text-decoration:none}
+.container{max-width:1080px;margin:0 auto;padding:0 24px}
+
+/* skip-to-content */
+.skip-link{position:absolute;left:8px;top:-48px;z-index:1000;background:#fff;color:#111;border:1px solid #ddd;border-radius:8px;padding:8px 14px;font-size:14px;transition:top .15s ease}
+.skip-link:focus{top:8px}
+
+/* ===== header ===== */
+header{border-bottom:1px solid var(--hairline-soft);position:sticky;top:0;background:var(--canvas);z-index:20}
+.head-inner{height:60px;display:flex;align-items:center;justify-content:space-between}
+.wordmark{font-weight:600;font-size:16px;letter-spacing:-.3px}
+.head-links{display:flex;gap:18px;font-size:14px;color:var(--steel)}
+.head-links a:hover{color:var(--ink)}
+
+/* ===== breadcrumb ===== */
+.crumb{font-size:14px;color:var(--stone);padding:28px 0 0}
+.crumb a:hover{color:var(--ink)}
+.crumb .sep{margin:0 8px;color:var(--stone)}
+.crumb .cur{color:var(--slate)}
+
+/* ===== article layout: 본문 + 우측 TOC ===== */
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:48px;padding:32px 0 48px;align-items:start}
+.tag{font-size:12px;font-weight:600;color:var(--brand-tag);background:var(--tag-bg);border-radius:9999px;padding:3px 10px}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.post-title{font-size:36px;font-weight:600;line-height:1.2;letter-spacing:-.5px;margin:16px 0}
+.post-meta{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--stone);margin-bottom:24px}
+.post-meta .avatar{width:28px;height:28px;border-radius:9999px;background:var(--thumb)}
+.post-meta .who{color:var(--slate);font-weight:500}
+.post-hero{aspect-ratio:16/9;background:var(--thumb);border-radius:12px;border:1px solid var(--hairline-soft);margin-bottom:40px}
+.avatar{width:24px;height:24px;border-radius:9999px;background:var(--thumb);flex-shrink:0}
+
+/* ===== prose ===== */
+.prose h2{font-size:28px;font-weight:600;line-height:1.25;letter-spacing:0;margin:40px 0 16px;scroll-margin-top:76px}
+.prose h3{font-size:22px;font-weight:600;line-height:1.3;margin:28px 0 12px;scroll-margin-top:76px}
+.prose p{font-size:16px;line-height:1.7;color:var(--charcoal);margin:16px 0}
+.prose ul{margin:16px 0 16px 20px}
+.prose li{font-size:16px;line-height:1.7;color:var(--charcoal);margin:6px 0}
+.prose code{font-size:14px;background:var(--surface);color:var(--charcoal);border:1px solid var(--hairline);border-radius:4px;padding:2px 6px}
+.codeblock{background:var(--surface-code);color:var(--on-dark);border-radius:8px;padding:16px 18px;margin:20px 0;overflow-x:auto}
+.codeblock code{background:none;border:none;color:var(--on-dark);padding:0;font-size:14px;line-height:1.6;white-space:pre}
+
+/* ===== TOC ===== */
+.toc{position:sticky;top:84px;font-size:14px;align-self:start}
+.toc .toc-title{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:12px}
+.toc a{display:block;color:var(--steel);padding:4px 0;line-height:1.4}
+.toc a:hover{color:var(--ink)}
+.toc a.lv3{padding-left:14px;font-size:13px;color:var(--stone)}
+.toc .share{border-top:1px solid var(--hairline-soft);margin-top:20px;padding-top:16px}
+.toc .share-title{font-size:13px;font-weight:600;margin-bottom:10px}
+.toc .share a,.toc .share button{display:flex;align-items:center;gap:8px;width:100%;padding:4px 0;line-height:1.4;color:var(--steel)}
+.toc .share button{background:none;border:0;font:inherit;text-align:left;cursor:pointer}
+.toc .share a:hover,.toc .share button:hover{color:var(--ink)}
+.toc .share .ic{width:16px;text-align:center;color:var(--stone)}
+
+/* ===== bottom blocks ===== */
+.divider{border:none;border-top:1px solid var(--hairline-soft);margin:40px 0}
+.rel-tags-label{font-size:14px;color:var(--steel);margin-bottom:12px}
+
+.author-card{border:1px solid var(--hairline);border-radius:12px;padding:24px;display:flex;gap:16px}
+.author-card .avatar{width:48px;height:48px;border-radius:9999px;background:var(--thumb);flex-shrink:0}
+.author-card .aname{font-size:16px;font-weight:600;color:var(--ink)}
+.author-card .arole{font-size:13px;color:var(--stone);margin:2px 0 8px}
+.author-card .abio{font-size:14px;line-height:1.6;color:var(--slate)}
+.author-card .amore{display:inline-block;margin-top:12px;font-size:14px;font-weight:500;color:var(--ink);text-decoration:underline}
+
+/* CTA 박스 — 즉시공개 + star 하이브리드 */
+.cta{background:var(--surface);border:1px solid var(--hairline);border-radius:12px;padding:24px;margin:24px 0}
+.cta-row{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.cta h3{font-size:18px;font-weight:600}
+.cta p{font-size:14px;color:var(--steel);margin-top:4px}
+.btn{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:500;line-height:1.3;border-radius:9999px;padding:10px 20px;cursor:pointer;border:none}
+.btn-green{background:var(--brand-green);color:var(--primary)}
+.btn-primary{background:var(--primary);color:var(--on-primary)}
+.cta-reveal{margin-top:20px;padding-top:20px;border-top:1px solid var(--hairline)}
+.cta-reveal[hidden]{display:none}
+.cta-reveal .rlead{font-size:14px;color:var(--slate);margin-bottom:12px}
+.cta-reveal .rlead strong{color:var(--ink)}
+
+/* prev/next */
+.pn-card{border:1px solid var(--hairline);border-radius:12px;padding:20px 24px;display:block}
+.pn-card:hover{background:var(--surface-soft)}
+.pn-card .lbl{font-size:13px;font-weight:600;color:var(--steel);margin-bottom:6px}
+.pn-card .pn-title{font-size:16px;font-weight:600;line-height:1.4}
+.pn-card .pn-date{font-size:13px;color:var(--stone);margin-top:6px}
+
+/* related posts (전폭) */
+.rel-title{font-size:20px;font-weight:600;margin:8px 0 20px}
+.rel-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.rel{border:1px solid var(--hairline);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.rel:hover{box-shadow:rgba(0,0,0,.08) 0 4px 12px 0}
+.rel .thumb{aspect-ratio:16/9;background:var(--thumb)}
+.rel .rbody{padding:18px;display:flex;flex-direction:column;gap:8px;flex:1}
+.rel h3{font-size:15px;font-weight:600;line-height:1.4}
+.rel .rdate{font-size:13px;color:var(--stone);margin-top:auto}
+
+.back{display:inline-block;margin:40px 0 0;font-size:14px;font-weight:500;color:var(--ink);text-decoration:underline}
+
+/* ===== footer ===== */
+footer{border-top:1px solid var(--hairline);padding:40px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;font-size:14px;color:var(--steel)}
+footer .links{display:flex;gap:16px}
+footer a:hover{color:var(--ink)}
+
+/* ===== responsive: 768px 이하 → TOC 숨김, 1열 ===== */
+@media (max-width:768px){
+  .layout{grid-template-columns:1fr;gap:0;padding-top:24px}
+  .toc{display:none}
+  .post-title{font-size:28px}
+  .rel-grid{grid-template-columns:1fr}
+  .head-links{gap:12px;font-size:13px}
+  .cta-row{flex-direction:column;align-items:flex-start}
+  .btn{min-height:44px}
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">본문으로 건너뛰기</a>
+
+<header>
+  <div class="container head-inner">
+    <a class="wordmark" href="index.html">seungbin.dev</a>
+    <nav class="head-links">
+      <a href="#ph-github">GitHub</a><!-- [PLACEHOLDER] URL -->
+      <a href="#ph-threads">Threads</a><!-- [PLACEHOLDER] URL -->
+      <a href="#ph-linkedin">LinkedIn</a><!-- [PLACEHOLDER] URL -->
+    </nav>
+  </div>
+</header>
+
+<main class="container" id="main">
+  <nav class="crumb" aria-label="breadcrumb">
+    <a href="index.html">홈</a><span class="sep" aria-hidden="true">/</span>
+    <a href="index.html">블로그</a><span class="sep" aria-hidden="true">/</span>
+    <span class="cur">유튜브 링크 하나로 Notion 요약 파이프라인 만들기</span>
+  </nav>
+
+  <div class="layout">
+    <!-- ===== 본문 + 하단 블록(저자·CTA·이전글까지 본문 열에 정렬) ===== -->
+    <article>
+      <div class="tags">
+        <span class="tag">Automate</span><span class="tag">Claude</span><span class="tag">자동화</span>
+      </div>
+      <h1 class="post-title">유튜브 링크 하나로 Notion 요약 파이프라인 만들기</h1>
+      <div class="post-meta">
+        <span class="avatar" aria-hidden="true"></span>
+        <span class="who">Seungbin</span><span aria-hidden="true">·</span>
+        <span>2026년 7월 22일</span><span aria-hidden="true">·</span>
+        <span>8 min read</span><!-- [PLACEHOLDER] 실제 읽기 시간 -->
+      </div>
+      <div class="post-hero" role="img" aria-label="유튜브 요약 파이프라인 개요 — 다운로드·프레임 추출·요약·Notion 저장 흐름도"></div>
+
+      <div class="prose">
+        <h2 id="intro">들어가며</h2>
+        <p>영상 하나를 제대로 정리하려면 보통 이 순서를 거칩니다. 다운로드하고, 자막을 받고, 중요한 장면을 캡처하고, 요약을 쓰고, Notion에 옮기고… 영상 30분에 정리 40분이 붙습니다.</p>
+        <p>그래서 이 과정을 통째로 자동화했습니다. 지금은 유튜브 링크 한 줄만 던지면 자막·핵심 요약·스크린샷이 붙은 문서가 Notion에 도착합니다. 이 글은 그 파이프라인을 처음부터 끝까지 재현할 수 있게 풀어 씁니다.</p>
+
+        <h2 id="concept">핵심 개념</h2>
+        <p>파이프라인은 네 단계로 쪼갭니다. 각 단계가 독립적이라, 하나가 실패해도 나머지는 그대로 굴러갑니다.</p>
+        <h3 id="concept-1">실패는 건너뛰고 계속 간다</h3>
+        <p>재생목록 10개를 돌리다 3번째가 403으로 막혀도 멈추지 않습니다. 실패한 항목은 <code>00_INDEX.md</code>에 사유만 남기고 다음으로 넘어갑니다. 배치 작업에서 전체 중단만큼 아까운 게 없습니다.</p>
+        <h3 id="concept-2">요약은 자막에서, 선별은 프레임에서</h3>
+        <p>요약 품질은 자막에서 나오고, "이 장면 좋다"는 판단은 캡처된 프레임에서 나옵니다. 둘을 분리하니 요약은 LLM에, 장면 선별은 사람(또는 간단한 휴리스틱)에 맡길 수 있었습니다.</p>
+
+        <h2 id="howto">실제 적용</h2>
+        <p>핵심은 세 개의 CLI를 이어 붙이는 것뿐입니다. <code>yt-dlp</code>로 받고, <code>ffmpeg</code>로 프레임을 뽑고, 자막을 요약 스크립트에 넘깁니다.</p>
+        <div class="codeblock"><code># 1) 영상 + 자막 다운로드
+yt-dlp --write-auto-sub --sub-lang ko,en -o "%(title)s.%(ext)s" &lt;URL&gt;
+
+# 2) 핵심 프레임 추출 (10초 간격)
+ffmpeg -i video.mp4 -vf fps=1/10 frames/%03d.png
+
+# 3) 자막 → 요약 (Claude API)
+python summarize.py --transcript video.ko.vtt --out summary.md</code></div>
+        <ul>
+          <li>yt-dlp로 영상과 자막을 함께 내려받는다 (자동 생성 자막 버그는 후처리로 교정)</li>
+          <li>ffmpeg로 10초 간격 프레임을 뽑아 눈으로 핵심 장면만 고른다</li>
+          <li>자막을 LLM에 넘겨 3줄 TL;DR + 소제목 요약을 받는다</li>
+          <li>요약 마크다운과 선별 스크린샷을 Notion으로 import</li>
+        </ul>
+
+        <h2 id="result">결과와 배운 점</h2>
+        <p>영상당 정리 시간이 40분에서 5분으로 줄었습니다. 더 중요한 건, 정리가 귀찮지 않으니 실제로 더 많이 보고 더 많이 남긴다는 점입니다. 자동화의 진짜 효과는 시간 절약보다 "결국 하게 만든다"에 있었습니다.</p>
+
+        <h2 id="wrap">정리</h2>
+        <p>① 파이프라인은 단계를 쪼개 실패에 강하게. ② 요약은 자막, 선별은 프레임으로 분리. ③ 완벽한 자동화보다 "매번 돌리게 되는" 자동화가 이깁니다. 다음 글에서는 이 요약을 velog·X로 재발행하는 원소스 멀티유즈 파이프라인을 다룹니다.</p>
+      </div>
+
+      <!-- 관련 태그 -->
+      <hr class="divider">
+      <p class="rel-tags-label">관련 태그</p>
+      <div class="tags">
+        <span class="tag">Automate</span><span class="tag">Claude</span><span class="tag">자동화</span>
+      </div>
+
+      <hr class="divider">
+
+      <!-- 저자 소개 카드 -->
+      <div class="author-card">
+        <span class="avatar" aria-hidden="true"></span>
+        <div>
+          <div class="aname">Seungbin</div>
+          <div class="arole">AI 활용 · 자동화 · 백엔드</div>
+          <p class="abio">반복되는 개발·정리 업무를 AI 워크플로우로 자동화하고, 만드는 과정을 전부 공개합니다. Claude·Codex로 일하는 방식과 직접 만든 플러그인을 이 블로그에 기록합니다.</p>
+          <a class="amore" href="index.html">이 저자의 글 모두 보기 →</a>
+        </div>
+      </div>
+
+      <!-- CTA 박스: 즉시공개 + ⭐ 하이브리드 -->
+      <div class="cta">
+        <div class="cta-row" id="cta-prompt">
+          <div>
+            <h3>이 글이 도움이 되셨나요?</h3>
+            <p>이 글에서 쓴 워크플로우, 치트시트로 정리해뒀습니다. 무료입니다.</p>
+          </div>
+          <button class="btn btn-green" id="cta-btn" aria-expanded="false" aria-controls="cta-reveal">자료 받기 →</button>
+        </div>
+        <div class="cta-reveal" id="cta-reveal" hidden>
+          <p class="rlead"><strong>⭐ GitHub 저장소</strong>에 자료를 올려뒀어요. 도움이 됐다면 스타 하나가 다음 자료의 연료입니다.</p>
+          <a class="btn btn-primary" href="#ph-github">저장소 열고 자료 받기 →</a><!-- [PLACEHOLDER] 저장소 URL -->
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- 이전 글 -->
+      <a class="pn-card" href="post.html">
+        <div class="lbl">이전 글</div>
+        <div class="pn-title">"배포" 한 단어로 테스트→커밋→푸시 자동화하기</div>
+        <div class="pn-date">2026년 7월 18일</div>
+      </a>
+    </article>
+
+    <!-- ===== 우측 TOC (데스크톱 전용) ===== -->
+    <aside class="toc" aria-label="목차">
+      <div class="toc-title">목차</div>
+      <a href="#intro">들어가며</a>
+      <a href="#concept">핵심 개념</a>
+      <a href="#concept-1" class="lv3">첫 번째 원칙</a>
+      <a href="#concept-2" class="lv3">두 번째 원칙</a>
+      <a href="#howto">실제 적용</a>
+      <a href="#result">결과와 배운 점</a>
+      <a href="#wrap">정리</a>
+      <div class="share">
+        <div class="share-title">공유</div>
+        <a href="#ph-share-linkedin"><span class="ic" aria-hidden="true">in</span> LinkedIn</a><!-- [PLACEHOLDER] 공유 URL -->
+        <a href="#ph-share-facebook"><span class="ic" aria-hidden="true">f</span> Facebook</a><!-- [PLACEHOLDER] -->
+        <a href="#ph-share-x"><span class="ic" aria-hidden="true">𝕏</span> X</a><!-- [PLACEHOLDER] -->
+        <button type="button" id="copy-link" aria-live="polite"><span class="ic" aria-hidden="true">🔗</span> 링크 복사</button>
+      </div>
+    </aside>
+  </div>
+
+  <!-- ===== 관련 글 (전폭) ===== -->
+  <hr class="divider">
+  <h2 class="rel-title">관련 글</h2>
+  <div class="rel-grid">
+    <!-- [PLACEHOLDER] 실제 관련 글로 교체 -->
+    <a class="rel" href="post.html">
+      <div class="thumb" aria-hidden="true"></div>
+      <div class="rbody">
+        <div class="tags"><span class="tag">Automate</span></div>
+        <h3>"배포" 한 단어로 테스트→커밋→푸시 자동화하기</h3>
+        <div class="rdate">2026년 7월 18일</div>
+      </div>
+    </a>
+    <a class="rel" href="post.html">
+      <div class="thumb" aria-hidden="true"></div>
+      <div class="rbody">
+        <div class="tags"><span class="tag">Build</span></div>
+        <h3>FastAPI + SQLModel로 5분 만에 REST API 뼈대 세우기</h3>
+        <div class="rdate">2026년 7월 9일</div>
+      </div>
+    </a>
+    <a class="rel" href="post.html">
+      <div class="thumb" aria-hidden="true"></div>
+      <div class="rbody">
+        <div class="tags"><span class="tag">Grow</span></div>
+        <h3>코딩테스트 준비를 AI 워크플로우로 돌린 4주 회고</h3>
+        <div class="rdate">2026년 7월 3일</div>
+      </div>
+    </a>
+  </div>
+
+  <a class="back" href="index.html">← 블로그 목록</a>
+</main>
+
+<footer>
+  <span>© 2026 Seungbin Min</span>
+  <div class="links">
+    <a href="#ph-github">GitHub</a><!-- [PLACEHOLDER] -->
+    <a href="#ph-threads">Threads</a><!-- [PLACEHOLDER] -->
+    <a href="#ph-linkedin">LinkedIn</a><!-- [PLACEHOLDER] -->
+  </div>
+</footer>
+
+<script>
+// CTA 즉시공개 토글 — star-gate 하이브리드 (노출 후 링크로 포커스 이동)
+document.getElementById('cta-btn').addEventListener('click', function(){
+  const reveal = document.getElementById('cta-reveal');
+  reveal.hidden = false;
+  this.setAttribute('aria-expanded','true');
+  document.getElementById('cta-prompt').querySelector('button').style.display = 'none';
+  reveal.querySelector('a').focus();
+});
+// 링크 복사 — 실제 성공 여부로 피드백
+document.getElementById('copy-link').addEventListener('click', function(e){
+  e.preventDefault();
+  const t = this.childNodes[this.childNodes.length-1];
+  const done = ok => { t.textContent = ok ? ' 복사됨!' : ' 복사 실패'; setTimeout(() => { t.textContent = ' 링크 복사'; }, 1500); };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(location.href).then(() => done(true), () => done(false));
+  } else { done(false); }
+});
+</script>
+
+</body>
+</html>
