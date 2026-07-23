@@ -1,31 +1,22 @@
-import Link from "next/link";
+import { Suspense } from "react";
 import { Container } from "@/components/layout/Container";
-import { getAllPosts } from "@/lib/content";
+import { PostExplorer } from "@/components/post-list/PostExplorer";
+import { PostGridSkeleton } from "@/components/post-list/PostGrid";
+import { getAllPosts, getAllTags } from "@/lib/content";
+import { buildMetadata } from "@/lib/metadata";
 
-// 최소 목록 — B 트랙 PostGrid 로 교체될 자리.
+export const metadata = buildMetadata({ title: "글 — seungbin.dev", path: "/posts" });
+
 export default function PostsPage() {
   const posts = getAllPosts();
+  const tags = getAllTags();
   return (
     <Container className="py-14">
-      <h1 className="text-[28px] font-semibold tracking-tight">글</h1>
-      <ul className="mt-8 space-y-5 border-t border-border pt-8">
-        {posts.map((post) => (
-          <li key={post.slug}>
-            <Link
-              href={`/posts/${post.slug}`}
-              className="font-medium hover:text-brand-tag"
-            >
-              {post.title}
-            </Link>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {post.description}
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {post.date} · {post.readingTime} · {post.category}
-            </p>
-          </li>
-        ))}
-      </ul>
+      <h1 className="mb-8 text-[28px] font-semibold tracking-tight">글</h1>
+      {/* useSearchParams(태그 필터) 는 Suspense 경계 필요 */}
+      <Suspense fallback={<PostGridSkeleton />}>
+        <PostExplorer posts={posts} tags={tags} />
+      </Suspense>
     </Container>
   );
 }
