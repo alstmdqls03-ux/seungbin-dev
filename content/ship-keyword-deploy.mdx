@@ -1,0 +1,35 @@
+---
+title: "키워드 하나로 테스트·커밋·배포까지: /ship 워크플로우"
+description: "'배포'라고 치면 테스트를 돌리고, 통과하면 conventional commit 을 자동 작성해 push 하는 워크플로우를 만든 기록."
+date: "2026-07-18"
+category: "Automate"
+tags: ["Claude Code", "CI", "자동화"]
+---
+
+## 문제
+
+배포 전 체크리스트를 매번 손으로 밟습니다. 테스트 → 스테이징 → 커밋 메시지 고민 → push.
+빼먹으면 사고, 지키면 지겨움.
+
+## 해결
+
+키워드 `배포` 하나에 전 과정을 묶었습니다.
+
+### 순서
+
+- 전체 테스트 실행
+- 실패하면 즉시 중단하고 보고
+- 통과하면 `git add -A` → diff 분석 → 커밋 메시지 자동 작성 → push
+
+```python
+def ship(branch: str) -> None:
+    if not run_tests().ok:
+        raise SystemExit("테스트 실패 — 배포 중단")
+    message = write_conventional_commit(git_diff_cached())
+    git_commit(message)
+    git_push(branch)
+```
+
+## 결과
+
+배포 마찰이 0에 수렴합니다. 실패는 항상 push 전에 잡힙니다.

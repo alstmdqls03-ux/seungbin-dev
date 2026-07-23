@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── 디자인 토큰 (DESIGN-mintlify.md) — light only. .dark 는 최종 QA 단계 ── */
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 4%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 4%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 4%;
+    --primary: 0 0% 4%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 10%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 35%;
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 10%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 167 100% 41%;
+    --radius: 0.75rem;
+
+    /* Mintlify 브랜드 토큰 (비-hsl 원색) */
+    --brand-green: #00d4a4;
+    --brand-green-deep: #00b48a;
+    --brand-tag: #2f66c0;
+    --tag-bg: rgba(55, 114, 207, 0.15);
+    --surface-code: #1c1c1e;
+
+    /* 레이아웃 — sticky 요소는 이 변수 참조 (하드코딩 금지) */
+    --header-height: 60px;
+  }
+
+  /* TODO(track-*): .dark { ... } 다크 팔레트는 최종 QA 1단계에서 일괄 정의 */
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    word-break: keep-all;
+  }
+}

@@ -1,0 +1,31 @@
+---
+title: "유튜브 링크 하나로 Notion 요약 파이프라인 만들기"
+description: "영상 URL만 던지면 자막·핵심 요약·스크린샷이 붙어 Notion에 자동 저장되는 파이프라인을 처음부터 끝까지 재현합니다."
+date: "2026-07-20"
+category: "Automate"
+tags: ["Claude", "자동화", "yt-dlp", "Notion"]
+---
+
+## 무엇을 만드나
+
+유튜브 링크를 던지면 30초 뒤 Notion에 요약 페이지가 도착합니다. 입력은 URL 하나,
+출력은 자막 + 한국어 요약 + 핵심 프레임 스크린샷입니다.
+
+### 절약되는 시간
+
+영상 1편을 손으로 정리하면 40분. 이 파이프라인은 30초. 주 5편이면 **주 3시간**이 사라집니다.
+
+## 핵심 단계
+
+1. `yt-dlp` 로 영상과 자막을 받는다
+2. `ffmpeg` 로 핵심 타임스탬프 프레임을 뽑는다
+3. Claude 로 요약하고 Notion 으로 밀어 넣는다
+
+```bash
+yt-dlp --write-auto-sub --sub-lang ko,en -f "bestvideo+bestaudio" "$URL"
+ffmpeg -nostdin -ss 00:03:12 -i video.mp4 -frames:v 1 -q:v 2 shot.png -y
+```
+
+## 마무리
+
+파이프라인 자체가 살아있는 포트폴리오입니다. 다음 글에서는 다채널 발행까지 엮습니다.
