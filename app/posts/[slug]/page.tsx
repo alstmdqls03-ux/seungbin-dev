@@ -6,6 +6,7 @@ import remarkGfm from "remark-gfm";
 import type { Metadata } from "next";
 import { Container } from "@/components/layout/Container";
 import { getAllPosts, getPostBySlug } from "@/lib/content";
+import { buildMetadata } from "@/lib/metadata";
 
 // rehype 체인은 여기(공통 MDX 렌더 옵션)에 산다 — next.config 아님 (next-mdx-remote 방식).
 // TODO(track-reader): C 트랙이 components/reader/Mdx.tsx 로 이 매핑을 대체·확장.
@@ -31,7 +32,14 @@ export async function generateMetadata({
   const { slug } = await params;
   const data = getPostBySlug(slug);
   if (!data) return {};
-  return { title: data.post.title, description: data.post.description };
+  return buildMetadata({
+    title: data.post.title,
+    description: data.post.description,
+    path: `/posts/${slug}`,
+    tags: data.post.tags,
+    type: "article",
+    publishedTime: data.post.date,
+  });
 }
 
 export default async function PostPage({
