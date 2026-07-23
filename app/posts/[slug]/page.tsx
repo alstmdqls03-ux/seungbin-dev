@@ -1,24 +1,11 @@
 import { notFound } from "next/navigation";
-import { MDXRemote } from "next-mdx-remote/rsc";
-import rehypeSlug from "rehype-slug";
-import rehypePrettyCode from "rehype-pretty-code";
-import remarkGfm from "remark-gfm";
 import type { Metadata } from "next";
 import { Container } from "@/components/layout/Container";
 import { getAllPosts, getPostBySlug } from "@/lib/content";
 import { buildMetadata } from "@/lib/metadata";
-
-// rehype 체인은 여기(공통 MDX 렌더 옵션)에 산다 — next.config 아님 (next-mdx-remote 방식).
-// TODO(track-reader): C 트랙이 components/reader/Mdx.tsx 로 이 매핑을 대체·확장.
-const mdxOptions = {
-  mdxOptions: {
-    remarkPlugins: [remarkGfm],
-    rehypePlugins: [
-      rehypeSlug,
-      [rehypePrettyCode, { theme: "github-dark", keepBackground: false }],
-    ],
-  },
-} as const;
+import { Mdx } from "@/components/reader/Mdx";
+import { TOC } from "@/components/reader/TOC";
+import { ReadingProgress } from "@/components/reader/ReadingProgress";
 
 export function generateStaticParams() {
   return getAllPosts().map((post) => ({ slug: post.slug }));
@@ -53,19 +40,29 @@ export default async function PostPage({
   const { post, content } = data;
 
   return (
-    <Container className="py-12">
-      <article className="mx-auto max-w-[720px]">
-        <h1 className="text-[36px] font-semibold leading-tight tracking-tight">
-          {post.title}
-        </h1>
-        <p className="mt-3 text-sm text-muted-foreground">
-          {post.date} · {post.readingTime}
-        </p>
-        <div className="prose prose-neutral mt-8 max-w-none prose-pre:bg-[var(--surface-code)]">
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-          <MDXRemote source={content} options={mdxOptions as any} />
+    <>
+      <ReadingProgress />
+      <Container className="py-12">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1fr)_200px]">
+          <article className="mx-auto w-full max-w-[720px]">
+            <h1 className="text-[36px] font-semibold leading-tight tracking-tight">
+              {post.title}
+            </h1>
+            <p className="mt-3 text-sm text-muted-foreground">
+              {post.date} · {post.readingTime}
+            </p>
+            <div
+              id="post-body"
+              className="prose prose-neutral mt-8 max-w-none prose-pre:overflow-x-auto prose-pre:rounded-lg prose-pre:bg-[var(--surface-code)] prose-pre:p-4"
+            >
+              <Mdx source={content} />
+            </div>
+          </article>
+          <aside className="hidden lg:block">
+            <TOC containerId="post-body" />
+          </aside>
         </div>
-      </article>
-    </Container>
+      </Container>
+    </>
   );
 }
