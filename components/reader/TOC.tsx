@@ -53,6 +53,7 @@ export function TOC({ containerId = "post-body" }: { containerId?: string }) {
           <li key={it.id} style={{ marginLeft: it.level === 3 ? 12 : 0 }}>
             <a
               href={`#${it.id}`}
+              aria-current={activeId === it.id ? "location" : undefined}
               className={cn(
                 "-ml-px block border-l-2 py-1 pl-3 transition-colors",
                 activeId === it.id

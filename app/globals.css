@@ -23,7 +23,8 @@
     --destructive-foreground: 0 0% 100%;
     --border: 0 0% 90%;
     --input: 0 0% 90%;
-    --ring: 167 100% 41%;
+    /* 포커스 링 — 라이트모드는 고대비 다크(WCAG 1.4.11 ≥3:1). 브랜드 틸은 대비 통과하는 다크모드 전용. */
+    --ring: 0 0% 25%;
     --radius: 0.75rem;
 
     /* Mintlify 브랜드 토큰 (비-hsl 원색) */

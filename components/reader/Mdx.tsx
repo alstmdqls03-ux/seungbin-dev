@@ -1,3 +1,4 @@
+import type { ComponentPropsWithoutRef } from "react";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import rehypeSlug from "rehype-slug";
 import rehypePrettyCode from "rehype-pretty-code";
@@ -18,6 +19,12 @@ const mdxOptions = {
 
 const components = {
   pre: CodeBlock,
+  // 넓은 표는 자체 가로 스크롤 컨테이너로 (모바일 오버플로우/클리핑 방지)
+  table: (props: ComponentPropsWithoutRef<"table">) => (
+    <div className="overflow-x-auto">
+      <table {...props} />
+    </div>
+  ),
 };
 
 export function Mdx({ source }: { source: string }) {

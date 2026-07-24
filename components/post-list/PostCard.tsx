@@ -36,7 +36,7 @@ export function PostCard({ post }: { post: Post }) {
       </div>
       <Link
         href={`/posts/${post.slug}`}
-        className="absolute inset-0 rounded-[inherit] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-green"
+        className="absolute inset-0 rounded-[inherit] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
         aria-label={post.title}
       />
     </Card>

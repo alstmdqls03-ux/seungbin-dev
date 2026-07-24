@@ -29,8 +29,8 @@ export function ReadingProgress() {
   return (
     <div className="fixed inset-x-0 top-0 z-30 h-0.5" aria-hidden="true">
       <div
-        className="h-full bg-brand-green transition-[width] duration-75 ease-out"
-        style={{ width: `${progress}%` }}
+        className="h-full w-full origin-left bg-brand-green transition-transform duration-75 ease-out"
+        style={{ transform: `scaleX(${progress / 100})` }}
       />
     </div>
   );

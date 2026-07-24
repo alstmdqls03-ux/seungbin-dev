@@ -53,6 +53,7 @@ export function PostExplorer({ posts, tags }: { posts: Post[]; tags: Tag[] }) {
         <TagFilter tags={tags} selected={selected} onToggle={toggle} />
       )}
       <p className="text-sm text-muted-foreground">{filtered.length}개의 글</p>
+      <h2 className="sr-only">글 목록</h2>
       <PostGrid posts={filtered} />
     </div>
   );

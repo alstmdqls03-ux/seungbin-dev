@@ -6,7 +6,9 @@ export const runtime = "edge";
 // 한글 렌더: NanumGothic 을 같은 오리진(/fonts)에서 self-host fetch (외부 CDN 아님). 실패 시 기본 폰트로 폴백.
 async function loadFont(origin: string): Promise<ArrayBuffer | null> {
   try {
-    const res = await fetch(new URL("/fonts/NanumGothic-Bold.ttf", origin));
+    const res = await fetch(new URL("/fonts/NanumGothic-Bold.ttf", origin), {
+      cache: "force-cache",
+    });
     if (!res.ok) return null;
     return await res.arrayBuffer();
   } catch {
@@ -72,6 +74,9 @@ export async function GET(req: Request) {
       fonts: font
         ? [{ name: "NanumGothic", data: font, weight: 700 as const, style: "normal" as const }]
         : [],
+      headers: {
+        "Cache-Control": "public, max-age=31536000, immutable, no-transform",
+      },
     },
   );
 }
