@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 export function PostCard({ post }: { post: Post }) {
   return (
     <Card className="group relative flex flex-col overflow-hidden p-0 transition-shadow hover:shadow-md">
-      <div className="aspect-[16/9] w-full bg-gradient-to-br from-[#e9edf1] to-[#f3f0ea]" />
+      <div className="aspect-[16/9] w-full bg-gradient-to-br from-[#e9edf1] to-[#f3f0ea] dark:from-[#1c1c1e] dark:to-[#161617]" />
       <div className="flex flex-1 flex-col gap-2.5 p-5">
         {post.tags.length > 0 && (
           <div className="relative z-10 flex flex-wrap gap-1.5">

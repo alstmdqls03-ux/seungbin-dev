@@ -10,7 +10,7 @@ export function Hero() {
     <section className="relative isolate overflow-hidden border-b border-border">
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
         {/* 도트 그리드 (CSS radial-gradient, 아래로 페이드) */}
-        <div className="absolute inset-0 [background-image:radial-gradient(circle_at_center,rgba(10,10,10,0.06)_1px,transparent_1px)] [background-size:22px_22px] [mask-image:linear-gradient(to_bottom,black,transparent_75%)]" />
+        <div className="absolute inset-0 [background-image:radial-gradient(circle_at_center,var(--hero-dot)_1px,transparent_1px)] [background-size:22px_22px] [mask-image:linear-gradient(to_bottom,black,transparent_75%)]" />
         {/* 브랜드 그린 글로우 */}
         <div className="hero-glow absolute left-1/2 top-[-160px] h-[520px] w-[520px] rounded-full" />
       </div>

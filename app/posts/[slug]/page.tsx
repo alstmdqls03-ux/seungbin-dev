@@ -53,7 +53,7 @@ export default async function PostPage({
             </p>
             <div
               id="post-body"
-              className="prose prose-neutral mt-8 max-w-none prose-pre:overflow-x-auto prose-pre:rounded-lg prose-pre:bg-[var(--surface-code)] prose-pre:p-4"
+              className="prose prose-neutral mt-8 max-w-none dark:prose-invert prose-pre:overflow-x-auto prose-pre:rounded-lg prose-pre:bg-[var(--surface-code)] prose-pre:p-4"
             >
               <Mdx source={content} />
             </div>

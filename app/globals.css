@@ -35,9 +35,37 @@
 
     /* 레이아웃 — sticky 요소는 이 변수 참조 (하드코딩 금지) */
     --header-height: 60px;
+    --hero-dot: rgba(10, 10, 10, 0.06);
   }
 
-  /* TODO(track-*): .dark { ... } 다크 팔레트는 최종 QA 1단계에서 일괄 정의 */
+  /* 다크 팔레트 — Mintlify 라이트 토큰에서 파생. brand-green 은 라이트/다크 공통. */
+  .dark {
+    --background: 0 0% 7%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 64%;
+    --accent: 0 0% 15%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 18%;
+    --input: 0 0% 22%;
+    --ring: 167 100% 41%;
+
+    --tag-bg: rgba(55, 114, 207, 0.22);
+    --surface-code: #0d0d0f;
+    --hero-dot: rgba(255, 255, 255, 0.07);
+
+    color-scheme: dark;
+  }
 }
 
 @layer base {
