@@ -1,0 +1,47 @@
+---
+title: "다크모드, 깜빡임 없이 — next-themes로 SSR 플래시 잡기"
+description: "테마 토글은 쉽지만 새로고침 때 흰 화면이 번쩍이는 FOUC가 진짜 문제다. next-themes가 어떻게 hydration 전에 테마를 주입하는지."
+date: "2026-03-08"
+category: "Build"
+tags: ["Next.js", "다크모드", "SSR", "UX"]
+---
+
+## 진짜 문제는 토글이 아니라 플래시
+
+다크모드 토글 자체는 클래스 하나 붙였다 떼는 일이다. 어려운 건 **새로고침 순간의
+흰 번쩍임(FOUC)** — 서버는 테마를 모르고, JS가 로드돼야 다크로 바뀌니까.
+
+## next-themes의 트릭
+
+`next-themes`는 hydration **이전에** 실행되는 인라인 스크립트를 `<head>`에 심는다.
+이 스크립트가 localStorage를 읽어 `<html>`에 클래스를 즉시 붙인다. React가
+깨어나기 전에 이미 올바른 테마다 → 번쩍임 0.
+
+```tsx
+<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+  {children}
+</ThemeProvider>
+```
+
+## suppressHydrationWarning
+
+서버 HTML엔 테마 클래스가 없고 클라이언트엔 있으니 mismatch가 뜬다.
+`<html suppressHydrationWarning>` 로 이 한 지점만 경고를 눌러준다.
+
+## 토글 버튼의 함정
+
+토글은 `mounted` 상태를 기다려야 한다. 마운트 전엔 서버/클라 값이 달라
+버튼 아이콘이 깜빡인다.
+
+```tsx
+const [mounted, setMounted] = useState(false);
+useEffect(() => setMounted(true), []);
+if (!mounted) return null; // 마운트 후에만 렌더
+```
+
+## 색상은 CSS 변수로
+
+`.dark` 클래스에 CSS 변수를 재정의하면, 컴포넌트마다 조건 분기 없이 테마가 흐른다.
+Tailwind의 `dark:` 접두사보다 토큰이 한 곳에 모여 유지보수가 쉽다.
+
+- [내가 채울 것: system 테마 채택률 vs 수동 토글 비율]

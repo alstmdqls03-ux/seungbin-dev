@@ -1,0 +1,48 @@
+---
+title: "OG 이미지에서 한글이 깨졌다 — 폰트 self-host로 잡기"
+description: "동적 OG 이미지 생성에서 한글이 네모(□□□)로 나오는 문제. 원인은 폰트 미포함이고, 해결은 한글 서브셋 폰트를 직접 바이너리로 넘기는 것."
+date: "2026-03-29"
+category: "Build"
+tags: ["Next.js", "OG이미지", "폰트", "트러블슈팅"]
+---
+
+## 문제 — 재현 조건
+
+동적 OG 이미지(`ImageResponse`)에 한글 제목을 렌더했더니 **전부 네모(□)**.
+영문·숫자는 멀쩡. 조건: 런타임이 접근 가능한 폰트에 한글 글리프가 없을 때.
+
+## 원인
+
+OG 이미지 렌더러는 시스템 폰트를 못 쓴다. 명시적으로 넘긴 폰트만 사용하는데,
+기본 라틴 폰트엔 한글 글리프가 없다. 그래서 한글이 **fallback 네모**로 떨어진다.
+
+## 시도한 것들
+
+- **구글 폰트 URL 링크**: CSP·외부 네트워크 의존, 빌드/런타임에 불안정
+- **전체 한글 폰트 임베드**: 한글 폰트는 수 MB → OG 함수 응답이 무거워짐
+- **한글 서브셋 self-host** ✅: 필요한 글리프만 서브셋한 폰트를 `public/fonts`에 두고
+  바이너리로 읽어 `fonts` 옵션에 넘김
+
+## 해결
+
+```tsx
+const fontData = await fetch(
+  new URL("../../public/fonts/pretendard-subset.woff", import.meta.url)
+).then((res) => res.arrayBuffer());
+
+return new ImageResponse(<div>{title}</div>, {
+  fonts: [{ name: "Pretendard", data: fontData, style: "normal" }],
+});
+```
+
+## 왜 self-host인가
+
+- 외부 CDN 의존 제거 → CSP·네트워크 장애에 안전
+- 서브셋으로 용량 최소화 → OG 함수 빠름
+- 재현 가능 → "내 머신에선 됐는데"가 없음
+
+## 검증
+
+실제 트위터/카톡 카드 미리보기로 확인. 렌더 성공 = 한글이 글자로 보이는 것.
+
+- [내가 채울 것: 서브셋 전/후 폰트 용량과 OG 응답 시간]

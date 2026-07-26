@@ -1,0 +1,51 @@
+---
+title: "git worktree로 4개 트랙을 동시에 굴린 병렬 개발기"
+description: "브랜치를 오가며 stash 지옥에 빠지는 대신, worktree로 물리적으로 분리된 작업 공간 4개를 띄우고 머지 게이트로 합친 패턴."
+date: "2025-09-14"
+category: "Build"
+tags: ["git", "워크플로우", "병렬"]
+---
+
+## 문제: 브랜치 스위칭 세금
+
+한 저장소에서 여러 작업을 병렬로 하면 `git stash` → `checkout` → 다시 `stash pop`
+의 반복이다. 컨텍스트가 계속 깨지고, 빌드 캐시도 매번 날아간다.
+
+## worktree = 물리적 분리
+
+`git worktree`는 **같은 저장소를 여러 디렉토리에 동시 체크아웃**한다.
+브랜치마다 독립된 폴더 + 독립된 빌드가 생긴다.
+
+```bash
+git worktree add ../proj-hero    feat/hero
+git worktree add ../proj-list    feat/post-list
+git worktree add ../proj-reader  feat/reader
+git worktree add ../proj-infra   feat/infra
+```
+
+이제 4개 창에서 각자 dev 서버를 띄우고 동시에 작업한다. stash 필요 없음.
+
+## 불변 규칙 (충돌 방지)
+
+- **담당 디렉토리 밖 수정 금지** — 필요하면 `TODO(track-X)` 주석만
+- 공통 타입/토큰만 사용, 새로 만들지 말 것
+- 완료 조건: 빌드 통과 + 콘솔 에러 0
+
+## 머지 게이트
+
+각 트랙이 끝나면 한 번에 합치지 않고 **순서대로 머지 + 매번 빌드 확인**.
+게이트를 통과 못 하면 그 트랙만 되돌린다. 전체가 아니라.
+
+## 정리
+
+```bash
+git worktree remove ../proj-hero
+git worktree prune
+```
+
+## 언제 안 쓰나
+
+트랙이 **서로 같은 파일을 건드리면** worktree가 오히려 독이다.
+그땐 그냥 순차로 간다. 병렬의 전제는 **격리 가능성**이다.
+
+- [내가 채울 것: 실제로 병렬로 돌린 트랙 수와 절약한 시간]

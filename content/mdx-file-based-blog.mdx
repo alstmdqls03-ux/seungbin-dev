@@ -1,0 +1,56 @@
+---
+title: "DB 없이 블로그를 만들었다 — 파일 기반 MDX가 정답인 이유"
+description: "글이 하루에 몇 번 바뀔까 말까 한 개인 블로그에 런타임 DB는 과설계다. Next.js SSG + content/*.mdx + gray-matter로 백엔드 0을 만든 구조."
+date: "2025-08-24"
+category: "Build"
+tags: ["Next.js", "MDX", "SSG", "아키텍처"]
+---
+
+## 왜 DB·백엔드가 없나
+
+랜딩·블로그 데이터는 **읽기 전용 + 저빈도 변경**이다. 방문자는 쓰기를 안 한다.
+이런 데이터에 런타임 DB를 붙이면 매 요청 왕복·상시 서버·비용·장애점만 늘고
+얻는 게 없다. 그래서 업계 표준이 **정적 생성(SSG) + 파일 기반 콘텐츠**다.
+
+## 구조
+
+```
+content/*.mdx        →  글 (frontmatter + 본문)
+lib/content.ts       →  gray-matter로 파싱, 목록/태그 집계
+app/posts/[slug]     →  빌드타임 정적 생성
+Vercel CDN           →  정적 파일로 배포
+git                  →  버전관리 = 무료 CMS
+```
+
+글 = 파일. **Git이 곧 CMS**다. 별도 백엔드·인증·DB가 0.
+
+## frontmatter 스키마
+
+```yaml
+title: "제목"
+description: "요약"
+date: "2025-08-24"
+category: "Build"        # Build | Automate | Grow
+tags: ["Next.js", "MDX"]
+```
+
+`types/content.ts`에 단일 출처로 타입을 두고, 여기 정의된 것만 쓴다.
+새 필드를 마음대로 늘리지 않는 게 유지보수의 핵심.
+
+## 읽기 시간 계산 — 한 줄
+
+```ts
+const mins = Math.max(1, Math.round(words / 200));
+```
+
+읽기 시간 라이브러리를 깔 이유가 없다. 단어 수 / 분당 200단어면 충분하다.
+
+## 언제 DB가 필요해지나
+
+글 저장엔 영원히 필요 없다. **런타임 상태**(댓글·조회수·구독·로그인)가 생기는
+순간에만, 그 기능만 서버리스로 얹으면 된다. 정적 페이지는 그대로 두고.
+
+## 결과
+
+- 배포 = git push → Vercel 자동 빌드. 서버 관리 0.
+- [내가 채울 것: 빌드 시간, Lighthouse 성능 점수]

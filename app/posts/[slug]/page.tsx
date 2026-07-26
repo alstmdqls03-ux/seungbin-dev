@@ -6,6 +6,10 @@ import { buildMetadata } from "@/lib/metadata";
 import { Mdx } from "@/components/reader/Mdx";
 import { TOC } from "@/components/reader/TOC";
 import { ReadingProgress } from "@/components/reader/ReadingProgress";
+import { ViewCounter } from "@/components/reader/ViewCounter";
+import { LikeButton } from "@/components/reader/LikeButton";
+import { Comments } from "@/components/reader/Comments";
+import { NewsletterForm } from "@/components/NewsletterForm";
 
 export function generateStaticParams() {
   return getAllPosts().map((post) => ({ slug: post.slug }));
@@ -49,7 +53,7 @@ export default async function PostPage({
               {post.title}
             </h1>
             <p className="mt-3 text-sm text-muted-foreground">
-              {post.date} · {post.readingTime}
+              {post.date} · {post.readingTime} <ViewCounter slug={slug} />
             </p>
             <div
               id="post-body"
@@ -57,6 +61,25 @@ export default async function PostPage({
             >
               <Mdx source={content} />
             </div>
+
+            <footer className="mt-14 border-t pt-8">
+              <div className="flex justify-center">
+                <LikeButton slug={slug} />
+              </div>
+
+              <div className="mt-12 rounded-xl border bg-muted/30 p-6">
+                <h3 className="text-lg font-semibold">새 글이 올라오면 받아보기</h3>
+                <p className="mt-1 mb-4 text-sm text-muted-foreground">
+                  스팸 없이, 새 글이 올라올 때만 보내드려요.
+                </p>
+                <NewsletterForm />
+              </div>
+
+              <section className="mt-14">
+                <h3 className="mb-6 text-lg font-semibold">댓글</h3>
+                <Comments />
+              </section>
+            </footer>
           </article>
           <aside className="hidden lg:block">
             <TOC containerId="post-body" />
