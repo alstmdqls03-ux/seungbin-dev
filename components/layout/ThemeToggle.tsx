@@ -8,6 +8,8 @@ import { Moon, Sun } from "lucide-react";
 export function ThemeToggle() {
   const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  // 마운트 후에만 렌더 — 하이드레이션 불일치 방지의 표준 가드
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMounted(true), []);
 
   const isDark = resolvedTheme === "dark";

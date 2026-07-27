@@ -11,8 +11,11 @@ export function LikeButton({ slug }: { slug: string }) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // 마운트 후 client-only 상태(localStorage) 초기화 — 하이드레이션 가드
+    /* eslint-disable react-hooks/set-state-in-effect */
     setMounted(true);
     setLiked(localStorage.getItem(`liked:${slug}`) === "1");
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [slug]);
 
   function toggle() {

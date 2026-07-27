@@ -17,6 +17,8 @@ export function TOC({ containerId = "post-body" }: { containerId?: string }) {
     const headings = Array.from(
       root.querySelectorAll<HTMLElement>("h2[id], h3[id]"),
     );
+    // 렌더된 본문 DOM을 읽어 목차를 도출 — SSR이라 effect+setState가 올바른 패턴
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setItems(
       headings.map((h) => ({
         id: h.id,

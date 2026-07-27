@@ -1,4 +1,6 @@
 import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
+import typography from "@tailwindcss/typography";
 
 // ── 디자인 토큰 단일 출처 (DESIGN-mintlify.md 팔레트) ─────────────
 // 규칙 #3: 색/폰트/여백은 반드시 이 토큰만 사용. 값은 globals.css의 CSS 변수에.
@@ -84,7 +86,7 @@ const config: Config = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
+  plugins: [tailwindcssAnimate, typography],
 };
 
 export default config;
