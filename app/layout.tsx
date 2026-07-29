@@ -4,6 +4,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ThemeProvider } from "@/components/theme-provider";
 import { buildMetadata } from "@/lib/metadata";
+import { Analytics } from "@vercel/analytics/next";
 
 // next/font 는 빌드타임에 폰트를 self-host → 런타임 외부 CDN 요청 없음 (self-contained 제약 충족)
 const sans = Inter({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
@@ -40,6 +41,8 @@ export default function RootLayout({
           </main>
           <Footer />
         </ThemeProvider>
+        {/* P1 게이트 판정용 (Threads→랜딩 100세션) — 리퍼러별 세션은 Vercel 대시보드 Analytics 탭 */}
+        <Analytics />
       </body>
     </html>
   );
