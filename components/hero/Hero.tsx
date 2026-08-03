@@ -35,7 +35,7 @@ export function Hero() {
           </Button>
           <Button asChild size="lg" variant="outline">
             <Link
-              href="https://github.com/alstmdqls03"
+              href="https://github.com/inpilot-dev"
               target="_blank"
               rel="noreferrer"
             >

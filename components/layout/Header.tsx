@@ -18,7 +18,7 @@ export function Header() {
             글
           </Link>
           <a
-            href="https://github.com/alstmdqls03"
+            href="https://github.com/inpilot-dev"
             className="hover:text-foreground"
             target="_blank"
             rel="noreferrer"
