@@ -58,6 +58,8 @@ export async function POST(req: NextRequest) {
         body: JSON.stringify({
           from,
           to: [email],
+          // 답장이 발신 주소로 오면 받을 편지함이 없다 — 실제 읽는 주소로 돌린다.
+          reply_to: process.env.RESEND_REPLY_TO,
           subject: "구독 감사해요 — SQL 인덱스 치트시트 드려요",
           html: welcomeHtml(),
         }),
