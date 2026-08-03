@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
 // CAP-4 star-gate: STAR_GATE_URL 설정 시에만 유도 블록 노출 — env 제거로 즉시 off.
 function welcomeHtml(): string {
   const leadMagnet =
-    process.env.LEAD_MAGNET_URL ?? "https://seungbin-dev.vercel.app/posts/sql-index-cheatsheet";
+    process.env.LEAD_MAGNET_URL ?? "https://inpilot.dev/posts/sql-index-cheatsheet";
   const starGate = process.env.STAR_GATE_URL;
   return [
     `<p>구독해주셔서 감사해요!</p>`,

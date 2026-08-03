@@ -11,7 +11,7 @@ export function Header() {
     >
       <Container className="flex h-full items-center justify-between">
         <Link href="/" className="text-base font-semibold tracking-tight">
-          seungbin.dev
+          inpilot.dev
         </Link>
         <nav className="flex items-center gap-[18px] text-sm text-muted-foreground">
           <Link href="/posts" className="hover:text-foreground">

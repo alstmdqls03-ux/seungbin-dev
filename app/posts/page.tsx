@@ -5,7 +5,7 @@ import { PostGridSkeleton } from "@/components/post-list/PostGrid";
 import { getAllPosts, getAllTags } from "@/lib/content";
 import { buildMetadata } from "@/lib/metadata";
 
-export const metadata = buildMetadata({ title: "글 — seungbin.dev", path: "/posts" });
+export const metadata = buildMetadata({ title: "글 — inpilot", path: "/posts" });
 
 export default function PostsPage() {
   const posts = getAllPosts();

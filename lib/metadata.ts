@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 
 export const SITE = {
-  name: "seungbin.dev",
-  title: "seungbin.dev — AI 워크플로우 & 기술 위키",
+  name: "inpilot",
+  title: "inpilot — AI에게 맡기지 않고, 조종합니다",
   description: "AI 워크플로우·자동화·백엔드를 만들고 전부 공개하는 기술 블로그.",
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://seungbin.dev",
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://inpilot.dev",
   author: "Seungbin",
   locale: "ko_KR",
 } as const;

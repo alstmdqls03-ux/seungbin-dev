@@ -18,7 +18,7 @@ async function loadFont(origin: string): Promise<ArrayBuffer | null> {
 
 export async function GET(req: Request) {
   const { searchParams, origin } = new URL(req.url);
-  const title = (searchParams.get("title") ?? "seungbin.dev").slice(0, 100);
+  const title = (searchParams.get("title") ?? "inpilot.dev").slice(0, 100);
   const tags = (searchParams.get("tags") ?? "")
     .split(",")
     .map((t) => t.trim())
@@ -44,7 +44,7 @@ export async function GET(req: Request) {
       >
         <div style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 30, color: "#5a5a5c" }}>
           <div style={{ width: 18, height: 18, borderRadius: 9999, background: "#00d4a4" }} />
-          seungbin.dev
+          inpilot.dev
         </div>
         <div style={{ display: "flex", fontSize: 64, lineHeight: 1.15, letterSpacing: -1 }}>
           {title}
