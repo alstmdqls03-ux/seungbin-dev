@@ -33,13 +33,24 @@ PER_FEED = 8      # 피드당 상한. 일부 피드는 전체 아카이브를 �
 
 # 2026-08-06 실측으로 살아있는 것만. 죽은 소스는 조용히 스킵된다.
 # HN이 맨 앞 — 유일하게 품질 필터(points>100)가 걸린 소스라 상한에 먼저 들어가야 한다.
+#
+# "공지"(회사 발표·릴리스)와 "반응"(써보고 남긴 말)을 섞는다. 논평 1줄을 붙이기
+# 쉬운 쪽은 반응이고, 발행 수를 정하는 건 수집량이 아니라 논평이 나오느냐다.
 FEEDS = [
+    # 반응 — 사람이 써보고 남긴 것
     ("Simon Willison", "https://simonwillison.net/atom/everything/"),
-    ("GeekNews", "https://feeds.feedburner.com/geeknews-feed"),
-    ("OpenAI Blog", "https://openai.com/blog/rss.xml"),
+    ("Lobsters", "https://lobste.rs/rss"),
+    ("dev.to AI", "https://dev.to/feed/tag/ai"),
+    ("Pragmatic Engineer", "https://blog.pragmaticengineer.com/rss/"),
     ("Latent Space", "https://www.latent.space/feed"),
+    # 공지 — 회사 발표·릴리스·신제품
+    ("OpenAI Blog", "https://openai.com/blog/rss.xml"),
     ("HuggingFace Blog", "https://huggingface.co/blog/feed.xml"),
     ("GitHub Trending", "https://mshibanami.github.io/GitHubTrendingRSS/daily/python.xml"),
+    ("Product Hunt", "https://www.producthunt.com/feed"),
+    # 국내
+    ("GeekNews", "https://feeds.feedburner.com/geeknews-feed"),
+    ("요즘IT", "https://yozm.wishket.com/magazine/feed/"),
 ]
 # HN은 RSS가 1건만 주므로 Algolia 공개 API 사용 (포인트 필터 가능)
 HN_API = "https://hn.algolia.com/api/v1/search_by_date?tags=story&numericFilters=points%3E100&hitsPerPage=15"
