@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """매일 AI/개발 소스를 모아 Threads 발행 후보 다이제스트를 만든다.
 
-체인: RSS/공개 API 수집 → 중복 제거 → Haiku 1콜 요약 → digest/YYYY-MM-DD.md
+체인: RSS/공개 API 수집 → 중복 제거 → claude -p 1콜 요약 → digest/YYYY-MM-DD.md
+
+요약은 API 키가 아니라 Claude 구독으로 돈다: 로컬은 로그인된 CLI 그대로,
+CI는 `claude setup-token`으로 발급한 CLAUDE_CODE_OAUTH_TOKEN을 쓴다.
 
 설계 원칙 (SPEC pipeline-stack.md):
 - 신규 인프라 0개. GitHub Actions + 무료 소스 + LLM 1콜 + PR 검수 게이트.
@@ -14,8 +17,9 @@
 from __future__ import annotations
 
 import json
-import os
 import re
+import shutil
+import subprocess
 import sys
 import urllib.error
 import urllib.request
@@ -163,18 +167,16 @@ def interleave(items: list[dict], limit: int) -> list[dict]:
 
 
 def summarize(items: list[dict]) -> list[str] | None:
-    """Haiku 1콜로 전체를 한 번에 요약. 실패하면 None — 수집은 계속된다.
+    """claude -p (Haiku) 1콜로 전체를 한 번에 요약. 실패하면 None — 수집은 계속된다.
 
     반환값은 items와 **같은 길이**의 리스트이거나 None. 길이가 다르면
     요약이 항목과 어긋난 것이므로 통째로 버린다 (엉뚱한 링크에 요약이
     붙는 것보다 요약이 없는 게 낫다).
     """
     try:
-        if not os.environ.get("ANTHROPIC_API_KEY"):
-            print("ANTHROPIC_API_KEY 없음 — 요약 건너뜀", file=sys.stderr)
+        if not shutil.which("claude"):
+            print("claude CLI 없음 — 요약 건너뜀", file=sys.stderr)
             return None
-
-        import anthropic
 
         listing = "\n".join(f"{i + 1}. [{it['source']}] {it['title']}"
                             for i, it in enumerate(items))
@@ -189,16 +191,17 @@ def summarize(items: list[dict]) -> list[str] | None:
             f"{listing}"
         )
 
-        resp = anthropic.Anthropic().messages.create(
-            model="claude-haiku-4-5",
-            max_tokens=4000,
-            messages=[{"role": "user", "content": prompt}],
+        # 구독 인증: 로컬은 로그인된 CLI, CI는 CLAUDE_CODE_OAUTH_TOKEN env
+        r = subprocess.run(
+            ["claude", "-p", "--model", "claude-haiku-4-5"],
+            input=prompt, capture_output=True, text=True, timeout=300,
         )
-        if resp.stop_reason == "max_tokens":
-            print("요약 잘림 — 버림", file=sys.stderr)
+        if r.returncode != 0:
+            print(f"claude -p 실패 (exit {r.returncode}): {r.stderr[:300]}",
+                  file=sys.stderr)
             return None
 
-        text = "".join(b.text for b in resp.content if b.type == "text")
+        text = r.stdout
         lines = [m.group(1).strip()
                  for m in (re.match(r"\s*\d+\.\s*(.+)", ln) for ln in text.splitlines())
                  if m]

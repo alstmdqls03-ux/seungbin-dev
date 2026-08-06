@@ -4,7 +4,9 @@ name: daily-digest
 # PR이 곧 검수 게이트다 — 발행은 사람이 논평을 붙여서 직접 한다 (CAP-6).
 #
 # ⚠️ 최초 1회 설정 필요:
-#   1. Settings → Secrets → Actions 에 ANTHROPIC_API_KEY 등록 (없으면 요약만 생략)
+#   1. 로컬에서 `claude setup-token` 실행 → 나온 토큰을 Settings → Secrets →
+#      Actions 에 CLAUDE_CODE_OAUTH_TOKEN 으로 등록. 요약이 API 과금 없이
+#      Claude 구독으로 돈다. (없으면 요약만 생략되고 수집은 정상)
 #   2. Settings → Actions → General → "Allow GitHub Actions to create and
 #      approve pull requests" 켜기 — 기본값이 꺼짐이라 안 켜면 PR이 안 열린다
 on:
@@ -34,12 +36,12 @@ jobs:
       - name: Self-check collector
         run: python scripts/collect_digest.py --selftest
 
-      - name: Install Anthropic SDK
-        run: pip install --quiet 'anthropic~=0.69'
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
 
       - name: Collect digest
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
         run: python scripts/collect_digest.py
 
       - name: Open PR
