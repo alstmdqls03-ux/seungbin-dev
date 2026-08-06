@@ -1,0 +1,64 @@
+name: daily-digest
+
+# 매일 새벽 3시(KST) AI·개발 소식을 모아 다이제스트 PR을 연다.
+# PR이 곧 검수 게이트다 — 발행은 사람이 논평을 붙여서 직접 한다 (CAP-6).
+#
+# ⚠️ 최초 1회 설정 필요:
+#   1. Settings → Secrets → Actions 에 ANTHROPIC_API_KEY 등록 (없으면 요약만 생략)
+#   2. Settings → Actions → General → "Allow GitHub Actions to create and
+#      approve pull requests" 켜기 — 기본값이 꺼짐이라 안 켜면 PR이 안 열린다
+on:
+  schedule:
+    - cron: "0 18 * * *" # 18:00 UTC = 03:00 KST
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: daily-digest
+  cancel-in-progress: false
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Self-check collector
+        run: python scripts/collect_digest.py --selftest
+
+      - name: Install Anthropic SDK
+        run: pip install --quiet 'anthropic~=0.69'
+
+      - name: Collect digest
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python scripts/collect_digest.py
+
+      - name: Open PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if [ -z "$(git status --porcelain digest/)" ]; then
+            echo "신규 항목 없음 — PR 생략"
+            exit 0
+          fi
+          DATE=$(TZ=Asia/Seoul date +%F)
+          BRANCH="digest/$DATE"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add digest/
+          git commit -m "chore(digest): $DATE 수집"
+          # force-push 안 함 — 사람이 PR에 붙인 논평을 날리지 않기 위해
+          git push -u origin "$BRANCH"
+          gh pr create --title "digest: $DATE" --body \
+            "자동 수집. 발행할 항목에 체크하고 **논평 1줄**을 붙인 뒤 Threads에 올린다. 판정 지표는 발행까지 간 건수."
